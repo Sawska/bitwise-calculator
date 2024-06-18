@@ -121,21 +121,55 @@ fn multiply(a: i32, b: i32) -> i32 {
     result
 }
 
-fn subtract(a:i32,b:i32)  ->i32 {
-    let mut subtraction = a ^ b;
+fn subtract(a: i32, b: i32) -> i32 {
+    let mut subtraction = a;
     let mut carry = b;
 
     while carry != 0 {
-        let sub = subtraction | carry;
-        carry = (subtraction ^ sub) >> 1;
-        subtraction = carry;
+        let borrow = (!subtraction) & carry;
+        subtraction = subtraction ^ carry;
+        carry = borrow << 1;
     }
 
     subtraction
 }
 
-fn divide(a:i32,b:i32) -> i32 {
-    a
+fn divide(a: i32, b: i32) -> i32 {
+    if b == 0 {
+        panic!("Division by zero is not allowed");
+    }
+
+    
+    let mut positive_result = (a >= 0) == (b >= 0);
+
+    
+    let mut dividend = if a < 0 { subtract(0, a) } else { a };
+    let mut divisor = if b < 0 { subtract(0, b) } else { b };
+
+    let mut quotient = 0;
+    let mut temp = 1;
+    let mut current_divisor = divisor;
+
+    
+    while dividend >= current_divisor {
+        current_divisor <<= 1;
+        temp <<= 1;
+    }
+
+    
+    while temp > 1 {
+        current_divisor >>= 1;
+        temp >>= 1;
+
+        if dividend >= current_divisor {
+            dividend = subtract(dividend, current_divisor);
+            quotient |= temp;
+        }
+    }
+
+    if positive_result {
+        quotient
+    } else {
+        subtract(0, quotient)
+    }
 }
-
-
